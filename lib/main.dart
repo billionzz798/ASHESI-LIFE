@@ -172,7 +172,8 @@ class _IssueReportPageState extends State<IssueReportPage> {
   bool _isLoading = true;
   List<IssueReport> _reports = [];
   final List<String> _attachments = [];
-  String _currentPage = 'Reports'; // Track which page is active
+  String _currentPage = 'Home'; // Track which page is active
+  final Set<String> _rsvpedEvents = {};
 
   @override
   void initState() {
@@ -337,7 +338,9 @@ class _IssueReportPageState extends State<IssueReportPage> {
                 ),
               ],
             )
-          : _buildPageContent(),
+          : _currentPage == 'Home'
+              ? _buildHomePage()
+              : _buildPageContent(),
       bottomNavigationBar: _buildBottomNav(),
     );
   }
@@ -352,8 +355,317 @@ class _IssueReportPageState extends State<IssueReportPage> {
       case 'Profile':
         return _buildProfilePage();
       default:
-        return _buildClubsPage();
+        return _buildHomePage();
     }
+  }
+
+  // ── Home Page ────────────────────────────────
+  Widget _buildHomePage() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            color: kMaroon,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Good day, Ernest 👋',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'ASHESI LIFE',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: Colors.white24,
+                      child: const Icon(Icons.person, color: Colors.white, size: 26),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Quick Actions
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            child: Text(
+              'Quick Actions',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: kTextDark,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _buildQuickAction(Icons.flag_outlined, 'Report Issue', () {
+                  setState(() {
+                    _currentPage = 'Reports';
+                    _showNewReport = true;
+                  });
+                }),
+                const SizedBox(width: 12),
+                _buildQuickAction(Icons.track_changes_outlined, 'Track Reports', () {
+                  setState(() {
+                    _currentPage = 'Reports';
+                    _showNewReport = false;
+                  });
+                }),
+                const SizedBox(width: 12),
+                _buildQuickAction(Icons.groups_outlined, 'Clubs', () {
+                  setState(() => _currentPage = 'Clubs');
+                }),
+                const SizedBox(width: 12),
+                _buildQuickAction(Icons.menu_book_outlined, 'Directory', () {
+                  setState(() => _currentPage = 'Directory');
+                }),
+              ],
+            ),
+          ),
+
+          // Announcements
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+            child: Text(
+              'Announcements',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: kTextDark,
+              ),
+            ),
+          ),
+          _buildAnnouncementCard(
+            'Campus Wi-Fi Maintenance',
+            'The IT team will perform network maintenance on Saturday, Apr 6 from 11pm–2am. Expect brief outages.',
+            Icons.wifi_outlined,
+            const Color(0xFF3B82F6),
+          ),
+          _buildAnnouncementCard(
+            'Residence Hall Inspection',
+            'Annual room inspections for Hall A & B scheduled for Apr 8–10. Please ensure rooms are tidy.',
+            Icons.home_outlined,
+            kMaroon,
+          ),
+          _buildAnnouncementCard(
+            'Library Extended Hours',
+            'The library will stay open until midnight during finals week (Apr 14–20). Coffee station available.',
+            Icons.local_library_outlined,
+            const Color(0xFF059669),
+          ),
+
+          // Upcoming Events
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+            child: Text(
+              'Upcoming Events',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: kTextDark,
+              ),
+            ),
+          ),
+          _buildEventCard('Coding Hackathon 2025', 'Apr 12 · LRC Auditorium', 'Coding Club', 'hackathon_1'),
+          _buildEventCard('Cultural Night', 'Apr 18 · Main Hall', 'Student Government', 'cultural_1'),
+          _buildEventCard('Career Fair', 'Apr 25 · Sports Complex', 'Career Services', 'career_1'),
+
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickAction(IconData icon, String label, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: kCardBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: kBorder),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 24, color: kMaroon),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: kTextDark,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnnouncementCard(String title, String body, IconData icon, Color color) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: kCardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorder),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 20, color: color),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: kTextDark,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  body,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: kTextMuted,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEventCard(String title, String dateLocation, String organizer, String eventId) {
+    final rsvped = _rsvpedEvents.contains(eventId);
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: kCardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorder),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: kTextDark,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_today_outlined, size: 12, color: kTextMuted),
+                    const SizedBox(width: 4),
+                    Text(
+                      dateLocation,
+                      style: const TextStyle(fontSize: 12, color: kTextMuted),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  organizer,
+                  style: const TextStyle(fontSize: 11, color: kTextMuted),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                if (rsvped) {
+                  _rsvpedEvents.remove(eventId);
+                } else {
+                  _rsvpedEvents.add(eventId);
+                }
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: rsvped ? kMaroon : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: kMaroon),
+              ),
+              child: Text(
+                rsvped ? 'RSVPed' : 'RSVP',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: rsvped ? Colors.white : kMaroon,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildClubsPage() {
@@ -1820,6 +2132,14 @@ class _IssueReportPageState extends State<IssueReportPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
+              _navItem(
+                icon: Icons.home_outlined,
+                label: 'Home',
+                active: _currentPage == 'Home',
+                onTap: () {
+                  setState(() => _currentPage = 'Home');
+                },
+              ),
               _navItem(
                 icon: Icons.flag_outlined,
                 label: 'Reports',
