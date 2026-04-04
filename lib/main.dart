@@ -169,6 +169,7 @@ class _IssueReportPageState extends State<IssueReportPage> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   bool _isSubmitting = false;
+  bool _isLoading = true;
   List<IssueReport> _reports = [];
   final List<String> _attachments = [];
   String _currentPage = 'Reports'; // Track which page is active
@@ -192,6 +193,7 @@ class _IssueReportPageState extends State<IssueReportPage> {
     setState(() {
       _reports = reportsJson.map((json) => IssueReport.fromJson(jsonDecode(json))).toList();
       _reports.sort((a, b) => b.submittedDate.compareTo(a.submittedDate));
+      _isLoading = false;
     });
   }
 
@@ -530,80 +532,28 @@ class _IssueReportPageState extends State<IssueReportPage> {
     );
   }
 
+  // ── Profile Page ──────────────────────────────
   Widget _buildProfilePage() {
-    return SingleChildScrollView(
-      child: Column(
+    return Scaffold(
+      backgroundColor: kBackground,
+      body: Column(
         children: [
-          Container(
-            color: kMaroon,
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'My Profile',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
+          _buildProfileHero(),
+          _buildProfileStats(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _profileSection('Personal Info', _buildPersonalInfoCard()),
+                  _profileSection('My Clubs', _buildClubsCard()),
+                  _profileSection('My Reports', _buildReportsSummaryCard()),
+                  _profileSection('Account', _buildAccountActionsCard()),
+                  const SizedBox(height: 4),
+                  _buildLogoutButton(),
+                ],
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Profile Avatar
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: kMaroon,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.person,
-                    size: 60,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Ernest Smart',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: kTextDark,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Student ID: ASH-2024-0156',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: kTextMuted,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildProfileOption(Icons.book_outlined, 'Major', 'Computer Science'),
-                _buildProfileOption(Icons.home_outlined, 'Residence', 'Hall A, Room 205'),
-                _buildProfileOption(Icons.email_outlined, 'Email', 'ernest@ashesi.edu.gh'),
-                _buildProfileOption(Icons.phone_outlined, 'Phone', '+233 24 123 4567'),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kMaroon,
-                    minimumSize: const Size(double.infinity, 48),
-                  ),
-                  icon: const Icon(Icons.logout, color: Colors.white),
-                  label: const Text('Logout', style: TextStyle(color: Colors.white)),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Logged out successfully')),
-                    );
-                  },
-                ),
-              ],
             ),
           ),
         ],
@@ -611,38 +561,491 @@ class _IssueReportPageState extends State<IssueReportPage> {
     );
   }
 
-  Widget _buildProfileOption(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+  Widget _buildProfileHero() {
+    return Container(
+      color: kMaroon,
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // Top row
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'My Profile',
+                    style: TextStyle(color: Colors.white, fontSize: 18,
+                        fontWeight: FontWeight.w500),
+                  ),
+                  GestureDetector(
+                    onTap: () {},
+                    child: Container(
+                      width: 34, height: 34,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.settings_outlined,
+                          color: Colors.white, size: 18),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Avatar + name
+            Column(
+              children: [
+                Container(
+                  width: 84, height: 84,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.30), width: 3),
+                  ),
+                  child: CircleAvatar(
+                    backgroundColor: const Color(0xFF6B1A27),
+                    child: Text(
+                      'GK',
+                      style: TextStyle(fontSize: 28, color: Colors.white,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Georgina Kusi-Appiah',
+                    style: TextStyle(color: Colors.white, fontSize: 20,
+                        fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                Text('Computer Science · Class of 2026',
+                    style: TextStyle(color: Colors.white.withOpacity(0.72),
+                        fontSize: 13)),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.30)),
+                  ),
+                  child: const Text('STUDENT',
+                      style: TextStyle(color: Colors.white, fontSize: 11,
+                          fontWeight: FontWeight.w600, letterSpacing: 0.8)),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileStats() {
+    return Container(
+      color: kCardBg,
       child: Row(
         children: [
-          Icon(icon, size: 20, color: kMaroon),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: kTextMuted,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: kTextDark,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
+          _statCell(_isLoading ? '—' : _reports.length.toString(), 'Reports', rightBorder: true),
+          _statCell('2', 'Clubs', rightBorder: true),
+          _statCell('5', 'Events RSVPd'),
         ],
       ),
     );
   }
+
+  Widget _statCell(String num, String label, {bool rightBorder = false}) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          border: Border(
+            right: rightBorder
+                ? BorderSide(color: kBorder, width: 0.5)
+                : BorderSide.none,
+          ),
+        ),
+        child: Column(
+          children: [
+            Text(num, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600,
+                color: kMaroon, height: 1)),
+            const SizedBox(height: 3),
+            Text(label, style: const TextStyle(fontSize: 11, color: kTextMuted)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _profileSection(String title, Widget child) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title.toUpperCase(),
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
+                  color: kTextMuted, letterSpacing: 0.8)),
+          const SizedBox(height: 10),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersonalInfoCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: kCardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kBorder, width: 0.5),
+      ),
+      child: Column(
+        children: [
+          _infoRow(Icons.badge_outlined, 'Student ID', 'ASH/CS/2022/041'),
+          _infoRow(Icons.email_outlined, 'Email', 'g.kusi-appiah@ashesi.edu.gh',
+              actionLabel: 'Copy', onAction: () {}),
+          _infoRow(Icons.home_outlined, 'Residence', 'Cobblestone — Room 14B'),
+          _infoRow(Icons.school_outlined, 'Year & Major', 'Year 4 · Computer Science',
+              isLast: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(IconData icon, String label, String value,
+      {String? actionLabel, VoidCallback? onAction, bool isLast = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: isLast ? BorderSide.none : BorderSide(color: kBorder, width: 0.5),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34, height: 34,
+            decoration: BoxDecoration(
+              color: kMaroon.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: kMaroon, size: 16),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 11, color: kTextMuted)),
+                const SizedBox(height: 1),
+                Text(value, style: const TextStyle(fontSize: 13,
+                    fontWeight: FontWeight.w500, color: kTextDark),
+                    overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+          if (actionLabel != null)
+            GestureDetector(
+              onTap: onAction,
+              child: Text(actionLabel,
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF185FA5),
+                      fontWeight: FontWeight.w500)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClubsCard() {
+    final execClubs = ['Korean Wave Club — President', 'Theatre Club — President'];
+    final memberClubs = ['Coding Club', 'Photography Society'];
+    return Container(
+      decoration: BoxDecoration(
+        color: kCardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kBorder, width: 0.5),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Wrap(
+        spacing: 8, runSpacing: 8,
+        children: [
+          ...execClubs.map((c) => _clubChip(c, isExec: true)),
+          ...memberClubs.map((c) => _clubChip(c)),
+        ],
+      ),
+    );
+  }
+
+  Widget _clubChip(String label, {bool isExec = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: isExec ? kMaroon : kMaroon.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: isExec ? kMaroon : kMaroon.withOpacity(0.18), width: 1),
+      ),
+      child: Text(label,
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500,
+              color: isExec ? Colors.white : kMaroon)),
+    );
+  }
+
+  Widget _buildReportsSummaryCard() {
+    if (_isLoading) {
+      return Container(
+        decoration: BoxDecoration(
+          color: kCardBg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: kBorder, width: 0.5),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 28),
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: kMaroon,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_reports.isEmpty) {
+      return Container(
+        decoration: BoxDecoration(
+          color: kCardBg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: kBorder, width: 0.5),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        child: Center(
+          child: Column(
+            children: const [
+              Icon(Icons.inbox_outlined, size: 32, color: kTextMuted),
+              SizedBox(height: 8),
+              Text(
+                'No reports submitted yet',
+                style: TextStyle(fontSize: 13, color: kTextMuted),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Show latest 3 only
+    final recent = _reports.take(3).toList();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: kCardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kBorder, width: 0.5),
+      ),
+      child: Column(
+        children: [
+          ...recent.asMap().entries.map((e) {
+            final isLast = e.key == recent.length - 1 && _reports.length <= 3;
+            final r = e.value;
+
+            Color sc;
+            Color sbg;
+            switch (r.status) {
+              case IssueStatus.resolved:
+                sc = const Color(0xFF059669);
+                sbg = const Color(0xFFEAF3DE);
+                break;
+              case IssueStatus.underReview:
+                sc = const Color(0xFFD97706);
+                sbg = const Color(0xFFFAEEDA);
+                break;
+              case IssueStatus.inProgress:
+                sc = const Color(0xFF3B82F6);
+                sbg = const Color(0xFFE6F1FB);
+                break;
+              default:
+                sc = const Color(0xFF4F46E5);
+                sbg = const Color(0xFFEEEDFE);
+            }
+
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: isLast
+                      ? BorderSide.none
+                      : BorderSide(color: kBorder, width: 0.5),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          r.category,
+                          style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: kTextDark),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${r.location} · ${DateFormat('MMM d, yyyy').format(r.submittedDate)}',
+                          style: const TextStyle(fontSize: 11, color: kTextMuted),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                        color: sbg,
+                        borderRadius: BorderRadius.circular(20)),
+                    child: Text(
+                      r.status.label,
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: sc),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+
+          // "View all" row if there are more than 3
+          if (_reports.length > 3)
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _currentPage = 'Reports';
+                  _showNewReport = false;
+                });
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border(
+                      top: BorderSide(color: kBorder, width: 0.5)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'View all ${_reports.length} reports',
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: kMaroon),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_forward,
+                        size: 14, color: kMaroon),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountActionsCard() {
+    final actions = [
+      {'icon': Icons.person_outline, 'label': 'Edit Profile', 'color': 0xFF185FA5},
+      {'icon': Icons.notifications_outlined, 'label': 'Notification Preferences', 'color': 0xFFBA7517},
+      {'icon': Icons.shield_outlined, 'label': 'Privacy & Security', 'color': 0xFF059669},
+      {'icon': Icons.help_outline, 'label': 'Help & Support', 'color': 0xFF8B2E3D},
+    ];
+    return Container(
+      decoration: BoxDecoration(
+        color: kCardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kBorder, width: 0.5),
+      ),
+      child: Column(
+        children: actions.asMap().entries.map((e) {
+          final isLast = e.key == actions.length - 1;
+          final a = e.value;
+          final color = Color(a['color'] as int);
+          return GestureDetector(
+            onTap: () {},
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                border: Border(bottom: isLast
+                    ? BorderSide.none : BorderSide(color: kBorder, width: 0.5)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 34, height: 34,
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.10),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(a['icon'] as IconData, color: color, size: 16),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(a['label'] as String,
+                        style: const TextStyle(fontSize: 14,
+                            fontWeight: FontWeight.w500, color: kTextDark)),
+                  ),
+                  const Icon(Icons.chevron_right, color: kTextMuted, size: 18),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+      child: GestureDetector(
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Signed out successfully')),
+          );
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          decoration: BoxDecoration(
+            color: kMaroon.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: kMaroon.withOpacity(0.20)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.logout, color: kMaroon, size: 16),
+              SizedBox(width: 8),
+              Text('Sign Out',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
+                      color: kMaroon)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
 
   // ── Header ──────────────────────────────────
 
