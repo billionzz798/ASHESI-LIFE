@@ -171,6 +171,7 @@ class _IssueReportPageState extends State<IssueReportPage> {
   bool _isSubmitting = false;
   List<IssueReport> _reports = [];
   final List<String> _attachments = [];
+  String _currentPage = 'Reports'; // Track which page is active
 
   @override
   void initState() {
@@ -325,19 +326,326 @@ class _IssueReportPageState extends State<IssueReportPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackground,
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: _showNewReport ? _buildNewReportForm() : _buildTrackReports(),
-          ),
-        ],
-      ),
+      body: _currentPage == 'Reports'
+          ? Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: _showNewReport ? _buildNewReportForm() : _buildTrackReports(),
+                ),
+              ],
+            )
+          : _buildPageContent(),
       bottomNavigationBar: _buildBottomNav(),
     );
   }
 
+  // ── Page Content Builder ─────────────────────
+  Widget _buildPageContent() {
+    switch (_currentPage) {
+      case 'Clubs':
+        return _buildClubsPage();
+      case 'Directory':
+        return _buildDirectoryPage();
+      case 'Profile':
+        return _buildProfilePage();
+      default:
+        return _buildClubsPage();
+    }
+  }
+
+  Widget _buildClubsPage() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            color: kMaroon,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Campus Clubs',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildClubCard('Coding Club', 'Learn programming and build projects', 156),
+                _buildClubCard('Debate Team', 'Engage in intellectual discussions', 89),
+                _buildClubCard('Photography Club', 'Capture moments and share stories', 124),
+                _buildClubCard('Music Society', 'Perform and enjoy live music', 203),
+                _buildClubCard('Arts & Crafts', 'Creative expression through art', 76),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClubCard(String name, String description, int members) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              name,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: kTextDark,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: const TextStyle(
+                fontSize: 13,
+                color: kTextMuted,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '$members members',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: kTextMuted,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kMaroon,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Joined $name!')),
+                    );
+                  },
+                  child: const Text('Join', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDirectoryPage() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            color: kMaroon,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Campus Directory',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildDirectoryCard('Dean of Students', 'Osei Kwame', '+233 24 123 4567'),
+                _buildDirectoryCard('Head of IT', 'Ama Osei', '+233 24 234 5678'),
+                _buildDirectoryCard('Residence Life Coordinator', 'Kofi Mensah', '+233 24 345 6789'),
+                _buildDirectoryCard('Security Office', 'Yaw Boateng', '+233 24 456 7890'),
+                _buildDirectoryCard('Health Services', 'Dr. Akosua Poku', '+233 24 567 8901'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDirectoryCard(String title, String name, String phone) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: kTextMuted,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              name,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: kTextDark,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.phone, size: 16, color: kMaroon),
+                const SizedBox(width: 8),
+                Text(
+                  phone,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: kMaroon,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfilePage() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            color: kMaroon,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'My Profile',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Profile Avatar
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: kMaroon,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    size: 60,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Ernest Smart',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: kTextDark,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Student ID: ASH-2024-0156',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: kTextMuted,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildProfileOption(Icons.book_outlined, 'Major', 'Computer Science'),
+                _buildProfileOption(Icons.home_outlined, 'Residence', 'Hall A, Room 205'),
+                _buildProfileOption(Icons.email_outlined, 'Email', 'ernest@ashesi.edu.gh'),
+                _buildProfileOption(Icons.phone_outlined, 'Phone', '+233 24 123 4567'),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kMaroon,
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                  icon: const Icon(Icons.logout, color: Colors.white),
+                  label: const Text('Logout', style: TextStyle(color: Colors.white)),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Logged out successfully')),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileOption(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: kMaroon),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: kTextMuted,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: kTextDark,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Header ──────────────────────────────────
+
   Widget _buildHeader() {
     return Container(
       color: kMaroon,
@@ -1045,11 +1353,41 @@ class _IssueReportPageState extends State<IssueReportPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _navItem(icon: Icons.home_outlined, label: 'Home', active: false),
-              _navItem(icon: Icons.flag_outlined, label: 'Report', active: true),
-              _navItem(icon: Icons.groups_outlined, label: 'Clubs', active: false),
-              _navItem(icon: Icons.menu_book_outlined, label: 'Directory', active: false),
-              _navItem(icon: Icons.person_outline, label: 'Profile', active: false),
+              _navItem(
+                icon: Icons.flag_outlined,
+                label: 'Reports',
+                active: _currentPage == 'Reports',
+                onTap: () {
+                  setState(() {
+                    _currentPage = 'Reports';
+                    _showNewReport = false;
+                  });
+                },
+              ),
+              _navItem(
+                icon: Icons.groups_outlined,
+                label: 'Clubs',
+                active: _currentPage == 'Clubs',
+                onTap: () {
+                  setState(() => _currentPage = 'Clubs');
+                },
+              ),
+              _navItem(
+                icon: Icons.menu_book_outlined,
+                label: 'Directory',
+                active: _currentPage == 'Directory',
+                onTap: () {
+                  setState(() => _currentPage = 'Directory');
+                },
+              ),
+              _navItem(
+                icon: Icons.person_outline,
+                label: 'Profile',
+                active: _currentPage == 'Profile',
+                onTap: () {
+                  setState(() => _currentPage = 'Profile');
+                },
+              ),
             ],
           ),
         ),
@@ -1061,9 +1399,10 @@ class _IssueReportPageState extends State<IssueReportPage> {
     required IconData icon,
     required String label,
     required bool active,
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
