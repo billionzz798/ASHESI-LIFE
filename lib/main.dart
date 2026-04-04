@@ -380,6 +380,11 @@ class _IssueReportPageState extends State<IssueReportPage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                _buildClubCard('Coding Club', 'Learn programming and build projects', 156),
+                _buildClubCard('Debate Team', 'Engage in intellectual discussions', 89),
+                _buildClubCard('Photography Club', 'Capture moments and share stories', 124),
+                _buildClubCard('Music Society', 'Perform and enjoy live music', 203),
+                _buildClubCard('Arts & Crafts', 'Creative expression through art', 76),
                 _buildClubCard('ASHESI Business Club', 'Develop business acumen and entrepreneurial skills', 248),
                 _buildClubCard('Investment Club', 'Learn investment strategies and financial markets', 167),
                 _buildClubCard('Robotics Club', 'Build and innovate with robotics and automation', 189),
