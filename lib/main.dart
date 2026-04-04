@@ -351,7 +351,7 @@ class _IssueReportPageState extends State<IssueReportPage> {
       case 'Clubs':
         return _buildClubsPage();
       case 'Directory':
-        return _buildDirectoryPage();
+        return const DirectoryPage();
       case 'Profile':
         return _buildProfilePage();
       default:
@@ -2208,6 +2208,530 @@ class _IssueReportPageState extends State<IssueReportPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+class DirectoryPerson {
+  final String name;
+  final String role;
+  final String department;
+  final String phone;
+  final String email;
+
+  const DirectoryPerson({
+    required this.name,
+    required this.role,
+    required this.department,
+    required this.phone,
+    required this.email,
+  });
+}
+
+//People on Directory
+const List<DirectoryPerson> _allPeople = [
+  DirectoryPerson(
+    name: 'Dr. Patrick Awuah',
+    role: 'President & Founder',
+    department: 'Administration',
+    phone: 'N/A',
+    email: 'pawuah@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'Dr. Ayorkor Korsah',
+    role: 'Senior Lecturer and Head of Department',
+    department: 'CS/IS',
+    phone: '+233 30 2610 330',
+    email: 'akorsah@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'Prof. Angela Owusu-Ansah',
+    role: 'Provost',
+    department: "Provost's Office",
+    phone: 'N/A',
+    email: 'aowusu@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'Nana-Afua Anoff',
+    role: 'Senior Career Development Officer',
+    department: 'Career Services',
+    phone: 'N/A',
+    email: 'nana-afua.anoff@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'Elena Rosca',
+    role: 'Senior Lecturer and Head of Department',
+    department: 'Engineering',
+    phone: 'N/A',
+    email: 'erosca@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'Ashesi Student Council',
+    role: 'Student Government',
+    department: 'Student Affairs',
+    phone: 'N/A',
+    email: 'studentcouncil@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'David Amatey Sampah',
+    role: 'Lecturer',
+    department: 'CS/IS',
+    phone: '233 302 610 330',
+    email: 'dsampah@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'Student Life and Engagement',
+    role: 'Student Affairs',
+    department: 'Student Affairs',
+    phone: 'N/A',
+    email: 'sle@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'Emmanuel Obeng Ntow',
+    role: 'Senior Academic Advisor',
+    department: 'Counselling and Coaching',
+    phone: '+233 50 155 7079',
+    email: 'emmanuel.ntow@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'Gideon Ofori Osabutey',
+    role: 'Lecturer',
+    department: 'Climate Change & Global Innovation',
+    phone: '+233 302 610 330',
+    email: 'gosabutey@ashei.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'David Ebo Adjepon-Yamoah',
+    role: 'Lecturer',
+    department: 'CS/IS',
+    phone: 'N/A',
+    email: 'dajepong@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'Joseph Oduro-Frimpong',
+    role: 'Senior Lecturer',
+    department: 'Humanities and Social Sciences',
+    phone: 'N/A',
+    email: 'joduro-frimpong@ashesi.edu.gh',
+  ),
+  DirectoryPerson(
+    name: 'Bridgette Addo Asiedu',
+    role: 'Director',
+    department: 'Health Center',
+    phone: 'N/A',
+    email: 'babakah@ashesi.edu.gh',
+  ),
+];
+
+// Faculty = everyone with "Dr." or "Prof." prefix
+bool _isFaculty(DirectoryPerson p) =>
+    p.name.startsWith('Dr.') || p.name.startsWith('Prof.');
+
+// Main Colours
+
+const Color _maroon = Color(0xFF8B2E3D);
+const Color _chipBg = Color(0xFF7A2535);
+const Color _cardBg = Colors.white;
+
+// Actual Page
+
+class DirectoryPage extends StatefulWidget {
+  const DirectoryPage({super.key});
+
+  @override
+  State<DirectoryPage> createState() => _DirectoryPageState();
+}
+
+class _DirectoryPageState extends State<DirectoryPage> {
+  int _filterIndex = 0;
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchCtrl.addListener(
+          () => setState(() => _query = _searchCtrl.text.toLowerCase()),
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  List<DirectoryPerson> get _filtered {
+    List<DirectoryPerson> list = _allPeople;
+
+    if (_filterIndex == 1) list = list.where(_isFaculty).toList();
+    if (_filterIndex == 2) {
+      final seen = <String>{};
+      list = list.where((p) => seen.add(p.department)).toList();
+    }
+
+    if (_query.isNotEmpty) {
+      list = list
+          .where(
+            (p) =>
+        p.name.toLowerCase().contains(_query) ||
+            p.department.toLowerCase().contains(_query) ||
+            p.role.toLowerCase().contains(_query),
+      )
+          .toList();
+    }
+    return list;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              itemCount: _filtered.length,
+              itemBuilder: (context, i) => _PersonCard(person: _filtered[i]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Header ─────────────────────────────────────────────────────────────────
+
+  Widget _buildHeader() {
+    return Container(
+      color: _maroon,
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 16,
+        left: 20,
+        right: 20,
+        bottom: 20,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Campus Directory',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            decoration: BoxDecoration(
+              color: _chipBg,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TextField(
+              controller: _searchCtrl,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                hintText: 'Search by name, department, or role...',
+                hintStyle: TextStyle(color: Colors.white54, fontSize: 14),
+                prefixIcon: Icon(Icons.search, color: Colors.white70),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              _FilterChip(
+                label: 'All',
+                index: 0,
+                selected: _filterIndex == 0,
+                onTap: () => setState(() => _filterIndex = 0),
+              ),
+              const SizedBox(width: 10),
+              _FilterChip(
+                label: 'Faculty',
+                index: 1,
+                selected: _filterIndex == 1,
+                onTap: () => setState(() => _filterIndex = 1),
+              ),
+              const SizedBox(width: 10),
+              _FilterChip(
+                label: 'Departments',
+                index: 2,
+                selected: _filterIndex == 2,
+                onTap: () => setState(() => _filterIndex = 2),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Bottom nav ─────────────────────────────────────────────────────────────
+
+  Widget _buildBottomNav() {
+    const items = [
+      {'icon': Icons.home_outlined, 'label': 'Home'},
+      {'icon': Icons.error_outline, 'label': 'Report'},
+      {'icon': Icons.group_outlined, 'label': 'Clubs'},
+      {'icon': Icons.menu_book_outlined, 'label': 'Directory'},
+      {'icon': Icons.person_outline, 'label': 'Profile'},
+    ];
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(items.length, (i) {
+              final active = i == 3;
+              return GestureDetector(
+                onTap: () {},
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      items[i]['icon'] as IconData,
+                      color: active ? _maroon : Colors.grey,
+                      size: 26,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      items[i]['label'] as String,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: active ? _maroon : Colors.grey,
+                        fontWeight: active
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Filter chip ───────────────────────────────────────────────────────────────
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final int index;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.index,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : _chipBg,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? _maroon : Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Person card ───────────────────────────────────────────────────────────────
+
+class _PersonCard extends StatelessWidget {
+  final DirectoryPerson person;
+
+  const _PersonCard({required this.person});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Avatar + name / role / department badge
+            Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0E8EA),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.person, color: _maroon, size: 28),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        person.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        person.role,
+                        style: const TextStyle(
+                          color: Colors.black54,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // Department badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0E8EA),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          person.department,
+                          style: const TextStyle(
+                            color: _maroon,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Call / Email buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      /* launch phone */
+                    },
+                    icon: const Icon(Icons.phone_outlined, size: 16),
+                    label: const Text('Call'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.black87,
+                      side: const BorderSide(color: Colors.black26),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      /* launch email */
+                    },
+                    icon: const Icon(Icons.email_outlined, size: 16),
+                    label: const Text('Email'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _maroon,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Phone number
+            Row(
+              children: [
+                const Icon(
+                  Icons.phone_outlined,
+                  size: 15,
+                  color: Colors.black45,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  person.phone,
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+
+            // Email address
+            Row(
+              children: [
+                const Icon(
+                  Icons.email_outlined,
+                  size: 15,
+                  color: Colors.black45,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  person.email,
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
