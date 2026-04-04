@@ -378,11 +378,14 @@ class _IssueReportPageState extends State<IssueReportPage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildClubCard('Coding Club', 'Learn programming and build projects', 156),
-                _buildClubCard('Debate Team', 'Engage in intellectual discussions', 89),
-                _buildClubCard('Photography Club', 'Capture moments and share stories', 124),
-                _buildClubCard('Music Society', 'Perform and enjoy live music', 203),
-                _buildClubCard('Arts & Crafts', 'Creative expression through art', 76),
+                _buildClubCard('ASHESI Tech Club', 'Programming, AI, and innovation in tech', 234),
+                _buildClubCard('Entrepreneurship Club', 'Business ideas and startup discussions', 189),
+                _buildClubCard('Debate & Public Speaking', 'Engage in intellectual discourse', 156),
+                _buildClubCard('Photography Society', 'Capture and celebrate campus life', 143),
+                _buildClubCard('Music & Arts Society', 'Perform and express creativity', 198),
+                _buildClubCard('Environmental Club', 'Sustainability and green initiatives', 167),
+                _buildClubCard('Sports & Wellness', 'Athletic events and fitness programs', 312),
+                _buildClubCard('Cultural Exchange', 'Celebrate diverse cultures on campus', 128),
               ],
             ),
           ),
@@ -471,11 +474,14 @@ class _IssueReportPageState extends State<IssueReportPage> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildDirectoryCard('Dean of Students', 'Osei Kwame', '+233 24 123 4567'),
-                _buildDirectoryCard('Head of IT', 'Ama Osei', '+233 24 234 5678'),
-                _buildDirectoryCard('Residence Life Coordinator', 'Kofi Mensah', '+233 24 345 6789'),
-                _buildDirectoryCard('Security Office', 'Yaw Boateng', '+233 24 456 7890'),
-                _buildDirectoryCard('Health Services', 'Dr. Akosua Poku', '+233 24 567 8901'),
+                _buildDirectoryCard('Vice Principal, Student Affairs', 'Dr. Ama Owusu-Mensah', '+233 321 234 567'),
+                _buildDirectoryCard('Facilities Management', 'Mr. Kofi Mensah', '+233 321 234 568'),
+                _buildDirectoryCard('IT Support Center', 'Ms. Ama Boateng', '+233 321 234 569'),
+                _buildDirectoryCard('Dean of Residence', 'Dr. Yaw Osei-Mensah', '+233 321 234 570'),
+                _buildDirectoryCard('Campus Security', 'Mr. Emmanuel Addae', '+233 321 234 571'),
+                _buildDirectoryCard('Health Center', 'Dr. Owusu Dankwa', '+233 321 234 572'),
+                _buildDirectoryCard('Academic Affairs', 'Prof. Akosua Owusu', '+233 321 234 573'),
+                _buildDirectoryCard('Student Services', 'Ms. Abena Asante', '+233 321 234 574'),
               ],
             ),
           ),
@@ -578,7 +584,7 @@ class _IssueReportPageState extends State<IssueReportPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Student ID: ASH-2024-0156',
+                  'Student ID: ASH-2024-0896',
                   style: const TextStyle(
                     fontSize: 13,
                     color: kTextMuted,
@@ -586,9 +592,9 @@ class _IssueReportPageState extends State<IssueReportPage> {
                 ),
                 const SizedBox(height: 24),
                 _buildProfileOption(Icons.book_outlined, 'Major', 'Computer Science'),
-                _buildProfileOption(Icons.home_outlined, 'Residence', 'Hall A, Room 205'),
-                _buildProfileOption(Icons.email_outlined, 'Email', 'ernest@ashesi.edu.gh'),
-                _buildProfileOption(Icons.phone_outlined, 'Phone', '+233 24 123 4567'),
+                _buildProfileOption(Icons.home_outlined, 'Residence', 'Manresa Hall, Room 305'),
+                _buildProfileOption(Icons.email_outlined, 'Email', 'ernest.smart@ashesi.edu.gh'),
+                _buildProfileOption(Icons.phone_outlined, 'Phone', '+233 501 234 567'),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
