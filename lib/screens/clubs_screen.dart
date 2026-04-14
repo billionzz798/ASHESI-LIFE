@@ -94,7 +94,7 @@ class _ClubsScreenState extends State<ClubsScreen> {
                   },
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.15),
+                    fillColor: Colors.white.withValues(alpha: 0.15),
                     hintText: 'Search clubs and committees...',
                     hintStyle: const TextStyle(color: Colors.white70),
                     prefixIcon: const Icon(
