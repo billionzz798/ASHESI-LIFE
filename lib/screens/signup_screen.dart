@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ashesilife/auth_service.dart';
+import 'package:ashesilife/services/firestore_service.dart';
 import 'package:ashesilife/theme/app_colors.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -11,6 +12,7 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final AuthService _authService = AuthService();
+  final FirestoreService _service = FirestoreService();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _studentIdController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -23,6 +25,38 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _agreedToTerms = false;
   String? _selectedMajor;
   String? _errorMessage;
+  List<String> _majors = [];
+
+  static const _fallbackMajors = [
+    'Business Administration',
+    'Computer Engineering',
+    'Computer Science',
+    'Economics',
+    'Electrical Engineering',
+    'Law',
+    'Mechanical Engineering',
+    'Mechatronics',
+    'MIS',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMajors();
+  }
+
+  Future<void> _loadMajors() async {
+    try {
+      final fetched = await _service.fetchMajors();
+      setState(() {
+        _majors = fetched.isNotEmpty ? fetched : _fallbackMajors;
+      });
+    } catch (_) {
+      setState(() {
+        _majors = _fallbackMajors;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -200,43 +234,17 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        initialValue: _selectedMajor,
+                        value: _selectedMajor,
                         decoration: const InputDecoration(
                           hintText: 'Select your major',
                           prefixIcon: Icon(Icons.school_outlined),
                         ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Computer Science',
-                            child: Text('Computer Science'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Business Administration',
-                            child: Text('Business Administration'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Mechanical Engineering',
-                            child: Text('Mechanical Engineering'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Electrical Engineering',
-                            child: Text('Electrical Engineering'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Mechatronics',
-                            child: Text('Mechatronics'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Computer Engineering',
-                            child: Text('Computer Engineering'),
-                          ),
-                          DropdownMenuItem(value: 'MIS', child: Text('MIS')),
-                          DropdownMenuItem(value: 'Law', child: Text('Law')),
-                          DropdownMenuItem(
-                            value: 'Economics',
-                            child: Text('Economics'),
-                          ),
-                        ],
+                        items: _majors
+                            .map((m) => DropdownMenuItem(
+                                  value: m,
+                                  child: Text(m),
+                                ))
+                            .toList(),
                         onChanged: (v) => setState(() {
                           _selectedMajor = v;
                         }),

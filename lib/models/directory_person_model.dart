@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class DirectoryPerson {
+  final String id;
   final String name;
   final String role;
   final String department;
@@ -6,12 +9,25 @@ class DirectoryPerson {
   final String email;
 
   const DirectoryPerson({
+    this.id = '',
     required this.name,
     required this.role,
     required this.department,
     required this.phone,
     required this.email,
   });
+
+  factory DirectoryPerson.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return DirectoryPerson(
+      id: doc.id,
+      name: data['name'] as String? ?? '',
+      role: data['role'] as String? ?? '',
+      department: data['department'] as String? ?? '',
+      phone: data['phone'] as String? ?? 'N/A',
+      email: data['email'] as String? ?? '',
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -28,6 +44,7 @@ bool isFaculty(DirectoryPerson p) {
   return p.name.startsWith('Dr.') || p.name.startsWith('Prof. ');
 }
 
+// Fallback data used only if Firestore fetch fails or returns empty
 const List<DirectoryPerson> kAllDirectoryPeople = [
   DirectoryPerson(
     name: 'Dr. Patrick Awuah',

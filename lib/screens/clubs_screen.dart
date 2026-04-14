@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/club_model.dart';
-import '../screens/club_detail_screen.dart';
 import '../services/firestore_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -34,7 +33,9 @@ class _ClubsScreenState extends State<ClubsScreen> {
   }
 
   Future<void> _loadClubs() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+    });
     final clubs = await _service.fetchClubs();
     setState(() {
       _allClubs = clubs;
@@ -58,21 +59,10 @@ class _ClubsScreenState extends State<ClubsScreen> {
 
   Future<void> _toggleFollow(ClubModel club) async {
     final wasFollowing = club.isFollowing;
-    setState(() => club.isFollowing = !club.isFollowing);
+    setState(() {
+      club.isFollowing = !club.isFollowing;
+    });
     await _service.toggleFollow(club.id, wasFollowing);
-  }
-
-  void _openDetail(ClubModel club) async {
-    // Navigate to the detail screen and refresh the clubs list on return
-    // (the user may have toggled follow from the detail screen)
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => ClubDetailScreen(club: club)));
-    // Refresh so the bell icon state on the card reflects any changes made
-    // inside the detail screen
-    setState(
-      () {},
-    ); // club.isFollowing was mutated in-place by ClubDetailScreen
   }
 
   @override
@@ -104,7 +94,7 @@ class _ClubsScreenState extends State<ClubsScreen> {
                   },
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.15),
+                    fillColor: Colors.white.withOpacity(0.15),
                     hintText: 'Search clubs and committees...',
                     hintStyle: const TextStyle(color: Colors.white70),
                     prefixIcon: const Icon(
@@ -177,7 +167,6 @@ class _ClubsScreenState extends State<ClubsScreen> {
                       return _ClubCard(
                         club: club,
                         onFollowToggle: () => _toggleFollow(club),
-                        onViewDetails: () => _openDetail(club),
                       );
                     },
                   ),
@@ -192,13 +181,8 @@ class _ClubsScreenState extends State<ClubsScreen> {
 class _ClubCard extends StatelessWidget {
   final ClubModel club;
   final VoidCallback onFollowToggle;
-  final VoidCallback onViewDetails;
 
-  const _ClubCard({
-    required this.club,
-    required this.onFollowToggle,
-    required this.onViewDetails,
-  });
+  const _ClubCard({required this.club, required this.onFollowToggle});
 
   @override
   Widget build(BuildContext context) {
@@ -304,7 +288,13 @@ class _ClubCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: onViewDetails,
+                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Resources for ${club.name} coming soon.',
+                        ),
+                      ),
+                    ),
                     icon: const Icon(
                       Icons.insert_drive_file_outlined,
                       size: 16,
@@ -322,8 +312,11 @@ class _ClubCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    // View Details now navigates to the detail screen
-                    onPressed: onViewDetails,
+                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Details for ${club.name} coming soon.'),
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.lightMaroon,
                       foregroundColor: Colors.white,

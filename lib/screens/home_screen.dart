@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/announcement_model.dart';
 import '../models/event_model.dart';
 import '../services/firestore_service.dart';
 import '../theme/app_colors.dart';
@@ -17,24 +18,27 @@ class _HomeScreenState extends State<HomeScreen> {
   List<EventModel> _allEvents = [];
   List<EventModel> _displayedEvents = [];
   Set<String> _rsvpedEvents = {};
+  List<AnnouncementModel> _announcements = [];
   bool _isLoading = true;
   int _selectedFilter = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadEvents();
+    _loadData();
   }
 
-  Future<void> _loadEvents() async {
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    final results = await Future.wait([
+      _service.fetchUpcomingEvents(),
+      _service.fetchMyRsvps(),
+      _service.fetchAnnouncements(),
+    ]);
     setState(() {
-      _isLoading = true;
-    });
-    final events = await _service.fetchUpcomingEvents();
-    final rsvps = await _service.fetchMyRsvps();
-    setState(() {
-      _allEvents = events;
-      _rsvpedEvents = rsvps;
+      _allEvents = results[0] as List<EventModel>;
+      _rsvpedEvents = results[1] as Set<String>;
+      _announcements = results[2] as List<AnnouncementModel>;
       _isLoading = false;
       _applyFilter();
     });
@@ -44,9 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_selectedFilter == 0) {
       _displayedEvents = List.from(_allEvents);
     } else {
-      _displayedEvents = _allEvents
-          .where((e) => _rsvpedEvents.contains(e.id))
-          .toList();
+      _displayedEvents =
+          _allEvents.where((e) => _rsvpedEvents.contains(e.id)).toList();
     }
   }
 
@@ -95,18 +98,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   )
                 : RefreshIndicator(
                     color: AppColors.lightMaroon,
-                    onRefresh: _loadEvents,
-                    child: _displayedEvents.isEmpty
-                        ? _buildEmptyState()
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
+                    onRefresh: _loadData,
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      children: [
+                        if (_announcements.isNotEmpty)
+                          _buildAnnouncementsSection(),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                          child: Text(
+                            'Upcoming Events',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
                             ),
-                            itemCount: _displayedEvents.length,
-                            itemBuilder: (context, index) =>
-                                _buildEventCard(_displayedEvents[index]),
                           ),
+                        ),
+                        if (_displayedEvents.isEmpty)
+                          _buildEmptyState()
+                        else
+                          ...(_displayedEvents.map(
+                            (e) => Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16),
+                              child: _buildEventCard(e),
+                            ),
+                          )),
+                      ],
+                    ),
                   ),
           ),
         ],
@@ -197,6 +217,108 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildAnnouncementsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Text(
+            'Announcements',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 110,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _announcements.length,
+            itemBuilder: (context, index) =>
+                _buildAnnouncementCard(_announcements[index]),
+          ),
+        ),
+        const SizedBox(height: 4),
+      ],
+    );
+  }
+
+  Widget _buildAnnouncementCard(AnnouncementModel announcement) {
+    final color = _parseColor(announcement.colorHex);
+    final icon = _resolveIcon(announcement.iconName);
+    return Container(
+      width: 260,
+      margin: const EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border(left: BorderSide(color: color, width: 4)),
+        boxShadow: const [
+          BoxShadow(
+              color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 16, color: color),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    announcement.title,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              announcement.body,
+              style: const TextStyle(fontSize: 12, color: Colors.black54),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _parseColor(String hex) {
+    try {
+      final cleaned = hex.replaceAll('#', '');
+      return Color(int.parse('FF$cleaned', radix: 16));
+    } catch (_) {
+      return AppColors.lightMaroon;
+    }
+  }
+
+  IconData _resolveIcon(String name) {
+    const iconMap = {
+      'campaign': Icons.campaign_outlined,
+      'info': Icons.info_outline,
+      'warning': Icons.warning_amber_outlined,
+      'event': Icons.event_outlined,
+      'announcement': Icons.announcement_outlined,
+      'school': Icons.school_outlined,
+      'star': Icons.star_outline,
+    };
+    return iconMap[name] ?? Icons.campaign_outlined;
+  }
+
   Widget _buildEventCard(EventModel event) {
     final rsvped = _rsvpedEvents.contains(event.id);
     return Container(
@@ -205,7 +327,8 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
+          BoxShadow(
+              color: Colors.black12, blurRadius: 6, offset: Offset(0, 2)),
         ],
       ),
       child: Padding(
@@ -213,7 +336,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title + badge
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,9 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
+                      horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF0F0F0),
                     borderRadius: BorderRadius.circular(6),
@@ -240,9 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     event.category,
                     style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+                        fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -262,7 +380,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 8),
             _infoRow(Icons.location_on_outlined, event.location),
             const SizedBox(height: 8),
-            _infoRow(Icons.group_outlined, '${event.attendeeCount} attending'),
+            _infoRow(
+                Icons.group_outlined, '${event.attendeeCount} attending'),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -270,12 +389,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ElevatedButton(
                 onPressed: () => _handleRsvp(event),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: rsvped
-                      ? Colors.white
-                      : AppColors.lightMaroon,
-                  foregroundColor: rsvped
-                      ? AppColors.lightMaroon
-                      : Colors.white,
+                  backgroundColor:
+                      rsvped ? Colors.white : AppColors.lightMaroon,
+                  foregroundColor:
+                      rsvped ? AppColors.lightMaroon : Colors.white,
                   side: rsvped
                       ? const BorderSide(color: AppColors.lightMaroon)
                       : BorderSide.none,
@@ -302,20 +419,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _infoRow(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 0),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: AppColors.lightMaroon),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 13, color: Colors.black87),
-            ),
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: AppColors.lightMaroon),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 13, color: Colors.black87),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -329,9 +443,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildEmptyState() {
-    return ListView(
-      children: const [
-        SizedBox(height: 120),
+    return const Column(
+      children: [
+        SizedBox(height: 80),
         Center(
           child: Icon(Icons.event_busy_outlined, size: 64, color: Colors.grey),
         ),
