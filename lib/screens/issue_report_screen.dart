@@ -177,10 +177,10 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? Colors.white : Colors.white.withOpacity(0.18),
+          color: active ? Colors.white : Colors.white.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: active ? Colors.white : Colors.white.withOpacity(0.4),
+            color: active ? Colors.white : Colors.white.withValues(alpha: 0.4),
           ),
         ),
         child: Text(
@@ -233,7 +233,7 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
                 (i) => Chip(
                   label: Text('Attachment ${i + 1}'),
                   onDeleted: () => setState(() => _attachments.removeAt(i)),
-                  backgroundColor: AppColors.lightMaroon.withOpacity(0.1),
+                  backgroundColor: AppColors.lightMaroon.withValues(alpha: 0.1),
                   labelStyle: const TextStyle(color: AppColors.lightMaroon),
                   deleteIconColor: AppColors.lightMaroon,
                 ),
@@ -324,7 +324,7 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
             duration: const Duration(milliseconds: 180),
             decoration: BoxDecoration(
               color: selected
-                  ? AppColors.lightMaroon.withOpacity(0.08)
+                  ? AppColors.lightMaroon.withValues(alpha: 0.08)
                   : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
@@ -335,7 +335,7 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -384,7 +384,7 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
         border: Border.all(color: const Color(0xFFE0E0E0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -421,7 +421,10 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: const Color(0xFFE0E0E0)),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 4,
+              ),
             ],
           ),
           child: Column(
@@ -486,7 +489,7 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
     return ListView.separated(
       padding: const EdgeInsets.all(20),
       itemCount: _reports.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, i) => _reportCard(_reports[i]),
     );
   }
@@ -502,7 +505,7 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
           border: Border.all(color: const Color(0xFFE0E0E0)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -535,7 +538,7 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: report.status.color.withOpacity(0.12),
+                    color: report.status.color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -653,7 +656,7 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: report.status.color.withOpacity(0.12),
+                        color: report.status.color.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(

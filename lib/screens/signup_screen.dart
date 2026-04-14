@@ -234,16 +234,15 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        value: _selectedMajor,
+                        initialValue: _selectedMajor,
                         decoration: const InputDecoration(
                           hintText: 'Select your major',
                           prefixIcon: Icon(Icons.school_outlined),
                         ),
                         items: _majors
-                            .map((m) => DropdownMenuItem(
-                                  value: m,
-                                  child: Text(m),
-                                ))
+                            .map(
+                              (m) => DropdownMenuItem(value: m, child: Text(m)),
+                            )
                             .toList(),
                         onChanged: (v) => setState(() {
                           _selectedMajor = v;

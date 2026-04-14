@@ -223,7 +223,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
@@ -317,7 +317,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _isMember
-                              ? Colors.white.withOpacity(0.3)
+                              ? Colors.white.withValues(alpha: 0.3)
                               : Colors.white,
                           foregroundColor: _isMember
                               ? Colors.white
@@ -339,8 +339,8 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                         height: 42,
                         decoration: BoxDecoration(
                           color: _isFollowing
-                              ? Colors.white.withOpacity(0.3)
-                              : Colors.white.withOpacity(0.15),
+                              ? Colors.white.withValues(alpha: 0.3)
+                              : Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: Colors.white30),
                         ),
@@ -367,7 +367,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(

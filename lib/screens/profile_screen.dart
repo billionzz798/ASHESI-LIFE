@@ -76,7 +76,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final fullName = _profile?['fullName'] as String? ?? 'Ashesi Student';
     final email = _profile?['email'] as String? ?? '';
     final major = _profile?['major'] as String? ?? '';
-    final studentId = _profile?['studentId'] as String? ?? '';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -109,7 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             width: 34,
                             height: 34,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
+                              color: Colors.white.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -156,7 +155,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     email,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.75),
+                      color: Colors.white.withValues(alpha: 0.75),
                       fontSize: 13,
                     ),
                   ),
@@ -234,7 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white30),
       ),
@@ -486,7 +485,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: report.status.color.withOpacity(0.12),
+                                color: report.status.color.withValues(
+                                  alpha: 0.12,
+                                ),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -567,7 +568,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: 34,
                     height: 34,
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.10),
+                      color: color.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
@@ -613,7 +614,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.lightMaroon.withOpacity(0.3)),
+            border: Border.all(
+              color: AppColors.lightMaroon.withValues(alpha: 0.3),
+            ),
           ),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
