@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "105536290789",
+    "project_id": "ashesilife",
+    "storage_bucket": "ashesilife.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:105536290789:android:5c6fd8cbaf9d2b4119b90c",
+        "android_client_info": {
+          "package_name": "com.example.ashesilife"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATzxR7mlAB7fqV0kSM96-ANu5I9ytYT88"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
