@@ -136,8 +136,26 @@ class FirestoreService {
 
   // ─── DIRECTORY ────────────────────────────────────────────────────────────
 
+  Future<List<DirectoryPerson>> fetchDirectoryPeople() async {
+    final snapshot = await _db.collection('directory').orderBy('name').get();
+    return snapshot.docs
+        .map((doc) => DirectoryPerson.fromFirestore(doc))
+        .toList();
+  }
+
   Future<void> saveDirectoryPerson(DirectoryPerson person) async {
     await _db.collection('directory').add(person.toMap());
+  }
+
+  // ─── PROGRAMS/MAJORS ──────────────────────────────────────────────────────
+
+  Future<List<String>> fetchMajors() async {
+    final snapshot =
+        await _db.collection('programs').orderBy('name').get();
+    return snapshot.docs
+        .map((doc) => (doc.data()['name'] as String? ?? ''))
+        .where((name) => name.isNotEmpty)
+        .toList();
   }
 
   // ─── USER PROFILE ─────────────────────────────────────────────────────────

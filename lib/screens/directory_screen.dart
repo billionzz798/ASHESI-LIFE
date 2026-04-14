@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/directory_person_model.dart';
+import '../services/firestore_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
 
@@ -12,6 +13,9 @@ class DirectoryScreen extends StatefulWidget {
 }
 
 class _DirectoryScreenState extends State<DirectoryScreen> {
+  final FirestoreService _service = FirestoreService();
+  List<DirectoryPerson> _allPeople = [];
+  bool _isLoading = true;
   int _filterIndex = 0;
   final TextEditingController _searchCtrl = TextEditingController();
   String _query = '';
@@ -22,6 +26,16 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
     _searchCtrl.addListener(
       () => setState(() => _query = _searchCtrl.text.toLowerCase()),
     );
+    _loadPeople();
+  }
+
+  Future<void> _loadPeople() async {
+    setState(() => _isLoading = true);
+    final people = await _service.fetchDirectoryPeople();
+    setState(() {
+      _allPeople = people.isNotEmpty ? people : kAllDirectoryPeople;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -31,7 +45,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
   }
 
   List<DirectoryPerson> get _filtered {
-    List<DirectoryPerson> list = kAllDirectoryPeople;
+    List<DirectoryPerson> list = List.from(_allPeople);
     if (_filterIndex == 1) list = list.where(isFaculty).toList();
     if (_filterIndex == 2) {
       final seen = <String>{};
@@ -58,11 +72,23 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
         children: [
           _buildHeader(),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: _filtered.length,
-              itemBuilder: (context, i) => _PersonCard(person: _filtered[i]),
-            ),
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.lightMaroon,
+                    ),
+                  )
+                : RefreshIndicator(
+                    color: AppColors.lightMaroon,
+                    onRefresh: _loadPeople,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      itemCount: _filtered.length,
+                      itemBuilder: (context, i) =>
+                          _PersonCard(person: _filtered[i]),
+                    ),
+                  ),
           ),
         ],
       ),
