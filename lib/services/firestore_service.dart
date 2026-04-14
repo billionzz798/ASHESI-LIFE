@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/club_model.dart';
+import '../models/club_detail_model.dart';
 import '../models/issue_report_model.dart';
 import '../models/event_model.dart';
 import '../models/announcement_model.dart';
@@ -50,12 +51,56 @@ class FirestoreService {
     }
   }
 
+  /// Fetches the extended detail document for a single club.
+  /// Returns null if the document does not exist yet in Firestore.
+  Future<ClubDetailModel?> fetchClubDetail(String clubId) async {
+    final doc = await _db.collection('clubs').doc(clubId).get();
+    if (!doc.exists) return null;
+    return ClubDetailModel.fromFirestore(doc);
+  }
+
+  /// Checks whether the current user is a member of the given club.
+  Future<bool> checkMembership(String clubId) async {
+    if (_uid == null) return false;
+    final doc = await _db
+        .collection('users')
+        .doc(_uid)
+        .collection('clubMemberships')
+        .doc(clubId)
+        .get();
+    return doc.exists;
+  }
+
+  /// Joins or leaves a club by toggling the membership sub-collection document.
+  Future<void> toggleMembership(String clubId, bool currentlyMember) async {
+    if (_uid == null) return;
+    final ref = _db
+        .collection('users')
+        .doc(_uid)
+        .collection('clubMemberships')
+        .doc(clubId);
+    if (currentlyMember) {
+      await ref.delete();
+      // Decrement memberCount on the club document
+      await _db.collection('clubs').doc(clubId).update({
+        'memberCount': FieldValue.increment(-1),
+      });
+    } else {
+      await ref.set({
+        'clubId': clubId,
+        'joinedAt': FieldValue.serverTimestamp(),
+      });
+      // Increment memberCount on the club document
+      await _db.collection('clubs').doc(clubId).update({
+        'memberCount': FieldValue.increment(1),
+      });
+    }
+  }
+
   // ─── ISSUE REPORTS ────────────────────────────────────────────────────────
 
   Future<List<IssueReport>> fetchMyReports() async {
     if (_uid == null) return [];
-    // Note: this query requires a composite index in Firestore.
-    // If you see a runtime error with a URL, click the URL to create the index.
     final snapshot = await _db
         .collection('issueReports')
         .where('userId', isEqualTo: _uid)
