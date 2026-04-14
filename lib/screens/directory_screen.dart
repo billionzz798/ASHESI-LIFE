@@ -31,11 +31,18 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
 
   Future<void> _loadPeople() async {
     setState(() => _isLoading = true);
-    final people = await _service.fetchDirectoryPeople();
-    setState(() {
-      _allPeople = people.isNotEmpty ? people : kAllDirectoryPeople;
-      _isLoading = false;
-    });
+    try {
+      final people = await _service.fetchDirectoryPeople();
+      setState(() {
+        _allPeople = people.isNotEmpty ? people : kAllDirectoryPeople;
+        _isLoading = false;
+      });
+    } catch (_) {
+      setState(() {
+        _allPeople = kAllDirectoryPeople;
+        _isLoading = false;
+      });
+    }
   }
 
   @override

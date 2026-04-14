@@ -46,10 +46,16 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _loadMajors() async {
-    final fetched = await _service.fetchMajors();
-    setState(() {
-      _majors = fetched.isNotEmpty ? fetched : _fallbackMajors;
-    });
+    try {
+      final fetched = await _service.fetchMajors();
+      setState(() {
+        _majors = fetched.isNotEmpty ? fetched : _fallbackMajors;
+      });
+    } catch (_) {
+      setState(() {
+        _majors = _fallbackMajors;
+      });
+    }
   }
 
   @override
