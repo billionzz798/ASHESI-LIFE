@@ -31,10 +31,24 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
 
   Future<void> _loadDetail() async {
     setState(() => _isLoading = true);
+
+    // Step 1: Fetch the club detail document.
+    // Any authenticated user can read this — no membership required.
     final detail = await _service.fetchClubDetail(widget.club.id);
+
+    // Step 2: Check membership separately, wrapped in try/catch so that
+    // a Firestore permissions error never prevents the screen from loading.
+    bool memberStatus = false;
+    try {
+      memberStatus = await _service.checkMembership(widget.club.id);
+    } catch (_) {
+      // If the membership check fails for any reason (permissions, network),
+      // default to not a member and continue rendering the screen normally.
+      memberStatus = false;
+    }
+
     if (detail != null) {
       detail.isFollowing = _isFollowing;
-      final memberStatus = await _service.checkMembership(widget.club.id);
       detail.isMember = memberStatus;
       setState(() {
         _detail = detail;
@@ -42,8 +56,9 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
         _isLoading = false;
       });
     } else {
-      // Firestore doc doesn't have extended detail yet — build a minimal one
-      // from the basic ClubModel so the screen still renders.
+      // Club document exists but has no extended fields yet —
+      // build a minimal model from the basic ClubModel data so the
+      // screen still renders with whatever information is available.
       setState(() {
         _detail = ClubDetailModel(
           id: widget.club.id,
@@ -55,7 +70,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
           description: widget.club.description,
           memberCount: widget.club.memberCount,
           upcomingEvents: widget.club.upcomingEvents,
-          establishedYear: 2000,
+          establishedYear: 0,
           meetingSchedule: '',
           meetingLocation: '',
           email: '',
@@ -66,8 +81,9 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
           events: [],
           resources: [],
           isFollowing: _isFollowing,
-          isMember: false,
+          isMember: memberStatus,
         );
+        _isMember = memberStatus;
         _isLoading = false;
       });
     }
@@ -78,7 +94,6 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
     setState(() {
       _isFollowing = !_isFollowing;
       if (_detail != null) _detail!.isFollowing = _isFollowing;
-      // Also update the original club object so the clubs list reflects the change
       widget.club.isFollowing = _isFollowing;
     });
     await _service.toggleFollow(widget.club.id, wasFollowing);
@@ -136,22 +151,22 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                       _buildAboutSection(),
                       const SizedBox(height: 16),
                       if (_detail!.meetingSchedule.isNotEmpty ||
-                          _detail!.meetingLocation.isNotEmpty)
+                          _detail!.meetingLocation.isNotEmpty) ...[
                         _buildMeetingSection(),
-                      if (_detail!.meetingSchedule.isNotEmpty ||
-                          _detail!.meetingLocation.isNotEmpty)
                         const SizedBox(height: 16),
-                      if (_detail!.leadership.isNotEmpty)
+                      ],
+                      if (_detail!.leadership.isNotEmpty) ...[
                         _buildLeadershipSection(),
-                      if (_detail!.leadership.isNotEmpty)
                         const SizedBox(height: 16),
-                      if (_detail!.events.isNotEmpty) _buildEventsSection(),
-                      if (_detail!.events.isNotEmpty)
+                      ],
+                      if (_detail!.events.isNotEmpty) ...[
+                        _buildEventsSection(),
                         const SizedBox(height: 16),
-                      if (_detail!.resources.isNotEmpty)
+                      ],
+                      if (_detail!.resources.isNotEmpty) ...[
                         _buildResourcesSection(),
-                      if (_detail!.resources.isNotEmpty)
                         const SizedBox(height: 16),
+                      ],
                       if (_detail!.email.isNotEmpty ||
                           _detail!.phone.isNotEmpty ||
                           _detail!.instagram.isNotEmpty ||
@@ -179,7 +194,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back button row
+              // Back button
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
                 child: GestureDetector(
@@ -198,7 +213,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Avatar + name + badges row
+              // Avatar + name + badges
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
@@ -208,7 +223,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
@@ -233,12 +248,10 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              _headerBadge(
-                                d.categoryLabel.isNotEmpty
-                                    ? d.categoryLabel
-                                    : d.category,
-                              ),
-                              const SizedBox(width: 6),
+                              if (d.categoryLabel.isNotEmpty)
+                                _headerBadge(d.categoryLabel),
+                              if (d.categoryLabel.isNotEmpty)
+                                const SizedBox(width: 6),
                               _headerBadge(d.category),
                             ],
                           ),
@@ -258,20 +271,22 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                                   fontSize: 12,
                                 ),
                               ),
-                              const SizedBox(width: 16),
-                              const Icon(
-                                Icons.calendar_today_outlined,
-                                color: Colors.white70,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Est. ${d.establishedYear}',
-                                style: const TextStyle(
+                              if (d.establishedYear > 0) ...[
+                                const SizedBox(width: 16),
+                                const Icon(
+                                  Icons.calendar_today_outlined,
                                   color: Colors.white70,
-                                  fontSize: 12,
+                                  size: 14,
                                 ),
-                              ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Est. ${d.establishedYear}',
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ],
@@ -281,7 +296,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Join + Follow buttons
+              // Join + Follow buttons — visible to ALL authenticated users
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: Row(
@@ -302,7 +317,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _isMember
-                              ? Colors.white.withValues(alpha: 0.3)
+                              ? Colors.white.withOpacity(0.3)
                               : Colors.white,
                           foregroundColor: _isMember
                               ? Colors.white
@@ -316,18 +331,20 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white30),
-                      ),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: _toggleFollow,
-                        icon: Icon(
+                    // Follow/unfollow bell button
+                    GestureDetector(
+                      onTap: _toggleFollow,
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: _isFollowing
+                              ? Colors.white.withOpacity(0.3)
+                              : Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.white30),
+                        ),
+                        child: Icon(
                           _isFollowing
                               ? Icons.notifications
                               : Icons.notifications_none_outlined,
@@ -350,7 +367,7 @@ class _ClubDetailScreenState extends State<ClubDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
