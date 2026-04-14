@@ -200,7 +200,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        initialValue: _selectedMajor,
+                        value: _selectedMajor,
                         decoration: const InputDecoration(
                           hintText: 'Select your major',
                           prefixIcon: Icon(Icons.school_outlined),

@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "issue_report_page" "\0"
+            VALUE "FileDescription", "ashesilife" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "issue_report_page" "\0"
+            VALUE "InternalName", "ashesilife" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "issue_report_page.exe" "\0"
-            VALUE "ProductName", "issue_report_page" "\0"
+            VALUE "OriginalFilename", "ashesilife.exe" "\0"
+            VALUE "ProductName", "ashesilife" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
