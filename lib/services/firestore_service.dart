@@ -12,7 +12,7 @@ class FirestoreService {
 
   String? get _uid => _auth.currentUser?.uid;
 
-  // ─── CLUBS ────────────────────────────────────────────────────────────────
+ //CLUBS SECTION
 
   Future<List<ClubModel>> fetchClubs() async {
     final snapshot = await _db.collection('clubs').get();
@@ -50,7 +50,7 @@ class FirestoreService {
     }
   }
 
-  // ─── ISSUE REPORTS ────────────────────────────────────────────────────────
+//ISSUE REPORT SECTION
 
   Future<List<IssueReport>> fetchMyReports() async {
     if (_uid == null) return [];
@@ -76,8 +76,7 @@ class FirestoreService {
       'status': newStatus.toString(),
     });
   }
-
-  // ─── EVENTS ───────────────────────────────────────────────────────────────
+// EVENTS SECTION
 
   Future<List<EventModel>> fetchUpcomingEvents() async {
     final snapshot = await _db
@@ -121,7 +120,7 @@ class FirestoreService {
     return snapshot.docs.map((doc) => doc.id).toSet();
   }
 
-  // ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────
+// ANNOUNCEMENTS
 
   Future<List<AnnouncementModel>> fetchAnnouncements() async {
     final snapshot = await _db
@@ -134,13 +133,13 @@ class FirestoreService {
         .toList();
   }
 
-  // ─── DIRECTORY ────────────────────────────────────────────────────────────
+// DIRECTORY
 
   Future<void> saveDirectoryPerson(DirectoryPerson person) async {
     await _db.collection('directory').add(person.toMap());
   }
 
-  // ─── USER PROFILE ─────────────────────────────────────────────────────────
+ // USER PROFILE
 
   Future<Map<String, dynamic>?> fetchUserProfile() async {
     if (_uid == null) return null;
